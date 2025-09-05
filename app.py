@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import sqlite3
-from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import sqlite3
+from flask import Flask, render_template, request, redirect, url_for, session, flash
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
+from skill_extractor import extract_skills
 
 app = Flask(__name__)
 app.secret_key = "secretkey"
@@ -11,24 +12,10 @@ UPLOAD_FOLDER = "static/resumes"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-def init_db():
+def get_db_connection():
     conn = sqlite3.connect("users.db")
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            fullname TEXT,
-            contact TEXT,
-            resume TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
-
-init_db()
+    conn.row_factory = sqlite3.Row
+    return conn
 
 @app.route("/")
 def home():
@@ -38,35 +25,44 @@ def home():
 def signup():
     if request.method == "POST":
         username = request.form["username"]
+        fullname = request.form["fullname"]
         email = request.form["email"]
+        contact = request.form["contact"]
+        domain = request.form["domain"]
         password = request.form["password"]
         repassword = request.form["repassword"]
+
         if password != repassword:
-            return "Passwords do not match!"
-
-        fullname = request.form["fullname"]
-        contact = request.form["contact"]
-
-        resume_file = request.files.get("resume")
-        resume_filename = None
-        if resume_file and resume_file.filename != "":
-            resume_filename = secure_filename(resume_file.filename)
-            resume_file.save(os.path.join(app.config["UPLOAD_FOLDER"], resume_filename))
+            flash("Passwords do not match!", "danger")
+            return redirect(url_for("signup"))
 
         hashed_password = generate_password_hash(password)
 
+        resume_file = request.files.get("resume")
+        resume_filename = None
+        skills = ""
+
+        if resume_file and resume_file.filename:
+            filename = secure_filename(resume_file.filename)
+            resume_filename = username + "_" + filename
+            resume_path = os.path.join(app.config["UPLOAD_FOLDER"], resume_filename)
+            resume_file.save(resume_path)
+            skills = extract_skills(resume_path)
+
         try:
-            conn = sqlite3.connect("users.db")
-            cursor = conn.cursor()
-            cursor.execute("""
-                INSERT INTO users (username, email, password, fullname, contact, resume)
-                VALUES (?, ?, ?, ?, ?, ?)
-            """, (username, email, hashed_password, fullname, contact, resume_filename))
+            conn = get_db_connection()
+            conn.execute(
+                "INSERT INTO users (username, fullname, email, contact, domain, password, resume, skills) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (username, fullname, email, contact, domain, hashed_password, resume_filename, skills),
+            )
             conn.commit()
             conn.close()
+            flash("Signup successful! Please login.", "success")
             return redirect(url_for("login"))
         except sqlite3.IntegrityError:
-            return "User already exists!"
+            flash("Username or Email already exists!", "danger")
+            return redirect(url_for("signup"))
+
     return render_template("signup.html")
 
 @app.route("/login", methods=["GET", "POST"])
@@ -75,35 +71,36 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
 
-        conn = sqlite3.connect("users.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT * FROM users WHERE username=?", (username,))
-        user = cursor.fetchone()
+        conn = get_db_connection()
+        user = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
         conn.close()
 
-        if user and check_password_hash(user[3], password):
-            session["user_id"] = user[0]
-            session["username"] = user[1]
-            flash("You are logged in successfully!", "success")
+        if user and check_password_hash(user["password"], password):
+            session["user_id"] = user["id"]
             return redirect(url_for("dashboard"))
         else:
-            return "Invalid credentials!"
+            flash("Invalid username or password", "danger")
+            return redirect(url_for("login"))
+
     return render_template("login.html")
 
 @app.route("/dashboard")
 def dashboard():
-    if "user_id" in session:
-        return render_template("dashboard.html", username=session["username"])
-    return redirect(url_for("login"))
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
+    conn.close()
+    return render_template("dashboard.html", user=user)
 
 @app.route("/profile")
 def profile():
     if "user_id" not in session:
         return redirect(url_for("login"))
-    conn = sqlite3.connect("users.db")
-    c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],))
-    user = c.fetchone()
+
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
     conn.close()
     return render_template("profile.html", user=user)
 
@@ -112,32 +109,35 @@ def edit_profile():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    conn = sqlite3.connect("users.db")
-    c = conn.cursor()
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
 
     if request.method == "POST":
         fullname = request.form["fullname"]
+        email = request.form["email"]
         contact = request.form["contact"]
-        skills = request.form.get("skills", "")
+        domain = request.form["domain"]
 
-        # Handle resume upload
         resume_file = request.files.get("resume")
-        if resume_file and resume_file.filename != "":
-            resume_filename = secure_filename(resume_file.filename)
-            resume_file.save(os.path.join(app.config["UPLOAD_FOLDER"], resume_filename))
-            c.execute("UPDATE users SET resume=? WHERE id=?", (resume_filename, session["user_id"]))
+        resume_filename = user["resume"]
+        skills = user["skills"]
 
-        c.execute("""
-            UPDATE users 
-            SET fullname=?, contact=?, skills=?
-            WHERE id=?
-        """, (fullname, contact, skills, session["user_id"]))
+        if resume_file and resume_file.filename:
+            filename = secure_filename(resume_file.filename)
+            resume_filename = user["username"] + "_" + filename
+            resume_path = os.path.join(app.config["UPLOAD_FOLDER"], resume_filename)
+            resume_file.save(resume_path)
+            skills = extract_skills(resume_path)
+
+        conn.execute(
+            "UPDATE users SET fullname=?, email=?, contact=?, domain=?, resume=?, skills=? WHERE id=?",
+            (fullname, email, contact, domain, resume_filename, skills, session["user_id"]),
+        )
         conn.commit()
         conn.close()
+        flash("Profile updated successfully!", "success")
         return redirect(url_for("profile"))
 
-    c.execute("SELECT * FROM users WHERE id=?", (session["user_id"],))
-    user = c.fetchone()
     conn.close()
     return render_template("edit_profile.html", user=user)
 
