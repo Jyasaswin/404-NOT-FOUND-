@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Teams - Profile</title>
+  <style>
+    body {
+      font-family: Calibri, Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fa;
+      color: #333;
+    }
+    header {
+      background: #2575fc;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    nav a {
+      color: white;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #2575fc;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin: 12px 0 6px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      outline: none;
+      font-size: 14px;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    .availability {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .availability input {
+      width: auto;
+      margin-right: 10px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #2575fc;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #1b5fd1;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Quick Teams</h1>
+    <nav>
+      <a href="home.html">Home</a>
+      <a href="profile.html">Profile</a>
+      <a href="login.html">Logout</a>
+    </nav>
+  </header>
+
+  <div class="container">
+    <h2>My Profile</h2>
+    <form action="#" method="post">
+      <label for="name">Full Name</label>
+      <input type="text" id="name" placeholder="Enter your name" required>
+
+      <label for="skills">Skills</label>
+      <input type="text" id="skills" placeholder="e.g. C++, Python, Web Development">
+
+      <label for="goals">Goals</label>
+      <textarea id="goals" placeholder="What are you looking to achieve?"></textarea>
+
+      <div class="availability">
+        <input type="checkbox" id="available">
+        <label for="available">I am currently available for teaming up</label>
+      </div>
+
+      <button type="submit">Save Profile</button>
+    </form>
+  </div>
+
+</body>
+</html>
