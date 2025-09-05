@@ -35,41 +35,12 @@
     }
   </style>
 </head>
-<body>
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <div class="container">
-      <a class="navbar-brand fs-3" href="#">Quick Teams</a>
-
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item"><a class="nav-link fs-5" href="#">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link fs-5" href="#">Teams</a></li>
-          <li class="nav-item"><a class="nav-link fs-5" href="#">Events</a></li>
-        </ul>
-
-        <ul class="navbar-nav ms-auto align-items-center">
-          <li class="nav-item">
-            <a class="nav-link" data-bs-toggle="offcanvas" href="#profileSidebar" role="button">
-              <i class="bi bi-person-circle" style="font-size: 2rem; color: #c0c0c0;"></i>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="profileSidebar">
-    <div class="offcanvas-header">
-      <h5 class="offcanvas-title">My Profile</h5>
-      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body">
-        <a href="{{ url_for('add_skills') }}">➤ Add Skills</a>
-        <a href="#">➤ Personal Details</a>
-        <a href="#">➤ My Teams</a>
-        <a href="#">➤ Settings</a>
-        <a href="{{ url_for('logout') }}">➤ Logout</a>
-    </div>
+<body style="background:black; color:#d4af37;">
+    
+  <div class="container text-center mt-5">
+    <h1>Welcome, {{ username }}!</h1>
+    <p>You are logged in successfully 🎉</p>
+    <a href="{{ url_for('logout') }}" class="btn btn-danger">Logout</a>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
