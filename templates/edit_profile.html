@@ -6,113 +6,42 @@
   <title>Edit Profile</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      background: #0a0a0a;
-      color: #d4af37;
-      font-family: Arial, sans-serif;
-    }
-
-    .section-card {
-      background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
-      border: 1px solid #c0c0c0;
-      border-radius: 15px;
-      padding: 25px;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
-      margin-bottom: 30px;
-    }
-
-    .section-card h4 {
-      color: #f0e68c;
-      border-bottom: 1px solid #c0c0c0;
-      padding-bottom: 8px;
-      margin-bottom: 15px;
-    }
-
-    .btn-custom {
-      background-color: #d4af37;
-      color: black;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-
-    label {
-      font-weight: bold;
-    }
-
-    input, textarea {
-      background-color: #1a1a1a;
-      border: 1px solid #c0c0c0;
-      color: #d4af37;
-    }
+    body { background: #0a0a0a; color: #d4af37; font-family: Arial, sans-serif; }
+    .card { background-color: #1a1a1a; color: #d4af37; border-radius: 10px; padding: 25px; }
+    .btn-custom { background: #d4af37; color: black; font-weight: bold; }
   </style>
 </head>
-<body class="container py-5">
-
-  <h2 class="mb-5 text-center">Edit Profile</h2>
-
-  <form method="POST">
-    <div class="row row-gap justify-content-center">
-      <div class="col-md-5">
-        <div class="section-card">
-          <h4>Contact Information</h4>
-          <div class="mb-3">
-            <label for="fullname" class="form-label">Full Name</label>
-            <input type="text" class="form-control" id="fullname" name="fullname" value="{{ user[5] }}">
-          </div>
-          <div class="mb-3">
-            <label for="age" class="form-label">Age</label>
-            <input type="number" class="form-control" id="age" name="age" value="{{ user[6] }}">
-          </div>
-          <div class="mb-3">
-            <label for="contact" class="form-label">Phone</label>
-            <input type="text" class="form-control" id="contact" name="contact" value="{{ user[7] }}">
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">Email (cannot edit)</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ user[2] }}" readonly>
-          </div>
+<body>
+  <div class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card w-50">
+      <h2 class="text-center mb-4">Edit Profile</h2>
+      <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+          <label>Full Name</label>
+          <input type="text" class="form-control" name="fullname" value="{{ user['fullname'] }}" required>
         </div>
-      </div>
-
-      <div class="col-md-5">
-        <div class="section-card">
-          <h4>Skills</h4>
-          <div class="mb-3">
-            <label for="skills" class="form-label">Skills (comma separated)</label>
-            <input type="text" class="form-control" id="skills" name="skills" value="{{ user[4] }}">
-          </div>
+        <div class="mb-3">
+          <label>Email</label>
+          <input type="email" class="form-control" name="email" value="{{ user['email'] }}" required>
         </div>
-      </div>
-    </div>
-
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="section-card">
-          <h4>About & Other Details</h4>
-          <div class="mb-3">
-            <label for="bio" class="form-label">Bio</label>
-            <textarea class="form-control" id="bio" name="bio" rows="3">{{ user[8] }}</textarea>
-          </div>
-          <div class="mb-3">
-            <label for="interests" class="form-label">Interests</label>
-            <input type="text" class="form-control" id="interests" name="interests" value="{{ user[9] }}">
-          </div>
-          <div class="mb-3">
-            <label for="availability" class="form-label">Availability</label>
-            <input type="text" class="form-control" id="availability" name="availability" value="{{ user[10] }}">
-          </div>
-          <div class="mb-3">
-            <label for="role" class="form-label">Role</label>
-            <input type="text" class="form-control" id="role" name="role" value="{{ user[11] }}">
-          </div>
+        <div class="mb-3">
+          <label>Phone Number</label>
+          <input type="text" class="form-control" name="contact" value="{{ user['contact'] }}">
         </div>
-      </div>
+        <div class="mb-3">
+          <label>Domain</label>
+          <input type="text" class="form-control" name="domain" value="{{ user['domain'] }}">
+        </div>
+        <div class="mb-3">
+          <label>Upload New Resume (optional)</label>
+          <input type="file" class="form-control" name="resume" accept=".pdf">
+          {% if user['resume'] %}
+            <small class="text-muted">Current: {{ user['resume'] }}</small>
+          {% endif %}
+        </div>
+        <button type="submit" class="btn btn-custom w-100">Save Changes</button>
+      </form>
     </div>
-
-    <div class="text-center">
-      <button type="submit" class="btn btn-custom">Save Changes</button>
-    </div>
-  </form>
-
+  </div>
 </body>
 </html>
