@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Teams - Home</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: black;
+      color: #d4af37;
+      font-family: Arial, sans-serif;
+    }
+    .navbar {
+      background-color: #1a1a1a;
+    }
+    .navbar-brand, .nav-link {
+      color: #c0c0c0 !important;
+    }
+    .hero {
+      text-align: center;
+      margin-top: 80px;
+      padding: 50px 20px;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      color: #e5e4e2;
+      text-shadow: 0px 0px 10px #c0c0c0;
+    }
+    .hero p {
+      font-size: 1.3rem;
+      color: #b0b0b0;
+    }
+    .about-section {
+      margin-top: 100px;
+      padding: 50px 20px;
+    }
+    .card {
+      background-color: #1c1c1c;
+      border: 1px solid #444;
+      border-radius: 12px;
+      color: #e5e4e2;
+      box-shadow: 0px 0px 10px #555;
+    }
+    .card img {
+      border-radius: 12px 12px 0 0;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">Quick Teams</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+          <li class="nav-item"><a class="nav-link" href="{{ url_for('signup') }}">Signup</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <h1>Welcome to Quick Teams</h1>
+    <p>Find teammates. Build connections. Win hackathons together.</p>
+  </section>
+
+  <section id="about" class="about-section container">
+    <div class="text-center mb-5">
+      <h2 style="color:#e5e4e2;">About Quick Teams</h2>
+      <p style="color:#b0b0b0;">Quick Teams is a platform designed to help students and participants quickly find teammates for hackathons, college projects, and events. 
+        It connects people based on skills, interests, and goals to form well-balanced teams.</p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d" class="card-img-top" alt="Teamwork">
+          <div class="card-body">
+            <h5 class="card-title">Find Team Members</h5>
+            <p class="card-text">Search and connect with peers who share your passion or complement your skills.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1552664730-d307ca884978" class="card-img-top" alt="Collaboration and Skills">
+          <div class="card-body">
+            <h5 class="card-title">Skill Matching</h5>
+            <p class="card-text">Get recommended teammates based on technical and non-technical strengths.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d" class="card-img-top" alt="Hackathon">
+          <div class="card-body">
+            <h5 class="card-title">Event Ready</h5>
+            <p class="card-text">Join hackathons and competitions with a well-prepared team at your side.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
