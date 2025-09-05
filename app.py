@@ -1,11 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = "secretkey"  # change this for security
+app.secret_key = "secretkey" 
 
-# Initialize database
 def init_db():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
@@ -58,6 +57,7 @@ def login():
 
         if user and check_password_hash(user[3], password):
             session["username"] = username
+            flash("You are logged in successfully!", "success")
             return redirect(url_for("dashboard"))
         else:
             return "Invalid credentials!"
@@ -68,6 +68,27 @@ def dashboard():
     if "username" in session:
         return render_template("dashboard.html", username=session["username"])
     return redirect(url_for("login"))
+
+
+@app.route("/add_skills", methods=["GET", "POST"])
+def add_skills():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+
+    if request.method == "POST":
+        skills = request.form.get("skills")
+        c.execute("UPDATE users SET skills=? WHERE id=?", (skills, session["user_id"]))
+        conn.commit()
+        conn.close()
+        flash("Skills added successfully!", "success")
+        return redirect(url_for("dashboard"))
+
+    conn.close()
+    return render_template("add_skills.html")
+
 
 @app.route("/logout")
 def logout():
