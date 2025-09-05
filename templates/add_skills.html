@@ -1,27 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add Skills</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body{
-      background: linear-gradient(to right, #8e2de2, #ff6a88);
-    }
-    
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Complete Your Profile</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { background: linear-gradient(to right, #8e2de2, #ff6a88); color: #fff; }
+.card { background: rgba(0,0,0,0.7); padding: 20px; border-radius: 12px; }
+.btn-skip { background: #6c757d; }
+</style>
 </head>
-<body class="bg-dark text-light">
-  <div class="container mt-5">
-    <h2 class="text-center">Add Your Skills</h2>
+<body>
+<div class="container mt-5">
+  <div class="card mx-auto" style="max-width:600px;">
+    <h2 class="text-center mb-4">Complete Your Profile</h2>
     <form method="POST">
-      <div class="mb-3">
-        <label for="skills" class="form-label">Skills (comma separated)</label>
-        <input type="text" class="form-control" id="skills" name="skills" required>
+      <!-- Step 1: Basic Info -->
+      <div class="step" id="step1">
+        <h4>Basic Information (Required)</h4>
+        <div class="mb-3">
+          <label for="fullname">Full Name</label>
+          <input type="text" class="form-control" name="fullname" required>
+        </div>
+        <div class="mb-3">
+          <label for="contact">Contact</label>
+          <input type="text" class="form-control" name="contact" required>
+        </div>
+        <div class="mb-3">
+          <label for="experience">Years of Experience</label>
+          <input type="number" class="form-control" name="experience" required>
+        </div>
+        <button type="button" class="btn btn-primary w-100 next">Next</button>
       </div>
-      <button type="submit" class="btn btn-primary w-100">Save Skills</button>
+
+      <!-- Step 2: Personal Details -->
+      <div class="step d-none" id="step2">
+        <h4>Personal Details</h4>
+        <div class="mb-3">
+          <label for="age">Age</label>
+          <input type="number" class="form-control" name="age">
+        </div>
+        <div class="mb-3">
+          <label for="bio">Bio</label>
+          <textarea class="form-control" name="bio"></textarea>
+        </div>
+        <button type="button" class="btn btn-skip w-100 mb-2 skip">Skip</button>
+        <button type="button" class="btn btn-primary w-100 next">Next</button>
+      </div>
+
+      <!-- Step 3: Skills -->
+      <div class="step d-none" id="step3">
+        <h4>Skills</h4>
+        <div class="mb-3">
+          <label for="skills">Skills (comma separated)</label>
+          <input type="text" class="form-control" name="skills">
+        </div>
+        <button type="button" class="btn btn-skip w-100 mb-2 skip">Skip</button>
+        <button type="button" class="btn btn-primary w-100 next">Next</button>
+      </div>
+
+      <!-- Step 4: Other Details -->
+      <div class="step d-none" id="step4">
+        <h4>Other Details</h4>
+        <div class="mb-3">
+          <label for="interests">Interests</label>
+          <input type="text" class="form-control" name="interests">
+        </div>
+        <div class="mb-3">
+          <label for="availability">Availability</label>
+          <input type="text" class="form-control" name="availability">
+        </div>
+        <div class="mb-3">
+          <label for="role">Preferred Role</label>
+          <input type="text" class="form-control" name="role">
+        </div>
+        <button type="submit" class="btn btn-success w-100">Finish</button>
+      </div>
     </form>
   </div>
+</div>
+
+<script>
+const steps = document.querySelectorAll('.step');
+let currentStep = 0;
+function showStep(i){
+  steps.forEach((s, idx)=> s.classList.toggle('d-none', idx!==i));
+}
+document.querySelectorAll('.next').forEach(btn => btn.addEventListener('click', ()=> { currentStep++; showStep(currentStep); }));
+document.querySelectorAll('.skip').forEach(btn => btn.addEventListener('click', ()=> { currentStep++; showStep(currentStep); }));
+showStep(currentStep);
+</script>
 </body>
 </html>

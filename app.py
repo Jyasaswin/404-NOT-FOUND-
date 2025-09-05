@@ -42,6 +42,16 @@ def signup():
         try:
             conn = sqlite3.connect("users.db")
             cursor = conn.cursor()
+            c = conn.cursor()
+            
+             # Check if user already exists
+            c.execute("SELECT * FROM users WHERE username=? OR email=?", (username, email))
+            existing = c.fetchone()
+            if existing:
+                conn.close()
+                flash("User already exists! Please log in.", "danger")
+                return redirect(url_for("login"))
+
             cursor.execute("INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
                            (username, email, password))
             conn.commit()
@@ -84,16 +94,30 @@ def add_skills():
         return redirect(url_for("login"))
 
     if request.method == "POST":
+        # Collect all fields from multi-step form
+        fullname = request.form.get("fullname")
+        age = request.form.get("age")
+        contact = request.form.get("contact")
+        bio = request.form.get("bio")
         skills = request.form.get("skills")
+        interests = request.form.get("interests")
+        availability = request.form.get("availability")
+        role = request.form.get("role")
+
         conn = sqlite3.connect("users.db")
         c = conn.cursor()
-        c.execute("UPDATE users SET skills=? WHERE id=?", (skills, session["user_id"]))
+        c.execute("""UPDATE users 
+                     SET fullname=?, age=?, contact=?, bio=?, skills=?, interests=?, availability=?, role=?
+                     WHERE id=?""",
+                  (fullname, age, contact, bio, skills, interests, availability, role, session["user_id"]))
         conn.commit()
         conn.close()
-        flash("Skills added successfully!", "success")
+
+        flash("Profile completed successfully!", "success")
         return redirect(url_for("dashboard"))
 
     return render_template("add_skills.html")
+
 
 @app.route("/add_personal", methods=["GET", "POST"])
 def add_personal():
