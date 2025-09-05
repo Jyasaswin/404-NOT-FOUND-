@@ -7,18 +7,19 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background: black;
+      background: linear-gradient(to right, #8e2de2, #ff6a88);; /* sunset orange-coral */
       color: #d4af37;
       font-family: Arial, sans-serif;
     }
     .navbar {
-      background:#151515;
+      background:linear-gradient(to right, #851fde, #f34164); 
     }
     .navbar-brand, .nav-link {
-      color: #02faee !important;
+      color: #02f6fa !important;
     }
-    .nav-item:hover{
-      text-decoration: underline white;
+    .nav-link:hover {
+      color: #00e6c3 !important;         /* cyan-teal hover */
+      text-shadow: 0px 0px 6px #00e6c3;
     }
     .hero {
       text-align: center;
@@ -44,9 +45,29 @@
       border-radius: 12px;
       color: #e5e4e2;
       box-shadow: 0px 0px 10px #3c3e3f;
+      transition: all 0.3s ease-in-out;
+    }
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0px 6px 20px rgba(255, 153, 102, 0.5); /* coral-orange glow */
     }
     .card img {
       border-radius: 12px 12px 0 0;
+    }
+    h5.card-title:hover {
+      color: #ffd700;  /* gold hover */
+      text-shadow: 0px 0px 6px #ffef9f;
+    }
+    /* Custom button (if needed later) */
+    .btn-custom {
+      background: #ffd700;
+      color: #151515;
+      font-weight: bold;
+      border-radius: 8px;
+    }
+    .btn-custom:hover {
+      background: #e6c200;
+      color: #fff;
     }
   </style>
 </head>
