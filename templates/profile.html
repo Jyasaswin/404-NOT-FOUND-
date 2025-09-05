@@ -23,14 +23,14 @@ body { background: #0a0a0a; color: #d4af37; font-family: Arial, sans-serif; }
   <p><b>Domain:</b> {{ user[8] }}</p>
 </div>
 
-<div class="section-card">
+<!-- <div class="section-card">
   <h4>Resume</h4>
   {% if user[6] %}
 <iframe src="{{ url_for('static', filename='resumes/' ~ user[6]) }}" width="100%" height="500px"></iframe>
   {% else %}
     <p>No resume uploaded.</p>
   {% endif %}
-</div>
+</div> -->
 
 <div class="section-card">
   <h4>Skills</h4>

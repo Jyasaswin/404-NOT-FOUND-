@@ -12,14 +12,24 @@ UPLOAD_FOLDER = "static/resumes"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
+
 def get_db_connection():
     conn = sqlite3.connect("users.db")
     conn.row_factory = sqlite3.Row
     return conn
 
+
+# Normalize skill strings (strip spaces + lowercase)
+def normalize_skills(skill_string):
+    if not skill_string:
+        return set()
+    return set(s.strip().lower() for s in skill_string.split(",") if s.strip())
+
+
 @app.route("/")
 def home():
     return render_template("home.html")
+
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -47,7 +57,7 @@ def signup():
             resume_filename = username + "_" + filename
             resume_path = os.path.join(app.config["UPLOAD_FOLDER"], resume_filename)
             resume_file.save(resume_path)
-            skills = extract_skills(resume_path)
+            skills = ",".join(normalize_skills(extract_skills(resume_path)))
 
         try:
             conn = get_db_connection()
@@ -64,6 +74,7 @@ def signup():
             return redirect(url_for("signup"))
 
     return render_template("signup.html")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -84,6 +95,7 @@ def login():
 
     return render_template("login.html")
 
+
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
@@ -94,6 +106,7 @@ def dashboard():
     conn.close()
     return render_template("dashboard.html", user=user)
 
+
 @app.route("/profile")
 def profile():
     if "user_id" not in session:
@@ -103,6 +116,7 @@ def profile():
     user = conn.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
     conn.close()
     return render_template("profile.html", user=user)
+
 
 @app.route("/edit_profile", methods=["GET", "POST"])
 def edit_profile():
@@ -127,7 +141,7 @@ def edit_profile():
             resume_filename = user["username"] + "_" + filename
             resume_path = os.path.join(app.config["UPLOAD_FOLDER"], resume_filename)
             resume_file.save(resume_path)
-            skills = extract_skills(resume_path)
+            skills = ",".join(normalize_skills(extract_skills(resume_path)))
 
         conn.execute(
             "UPDATE users SET fullname=?, email=?, contact=?, domain=?, resume=?, skills=? WHERE id=?",
@@ -141,10 +155,154 @@ def edit_profile():
     conn.close()
     return render_template("edit_profile.html", user=user)
 
+
+@app.route("/match")
+def match():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("SELECT * FROM users WHERE id=?", (session["user_id"],))
+    user = cur.fetchone()
+    if not user:
+        conn.close()
+        return "User not found", 404
+
+    user_skills = normalize_skills(user["skills"])
+    user_domain = user["domain"]
+
+    cur.execute("SELECT * FROM domains WHERE LOWER(name)=?", (user_domain.lower(),))
+    domain = cur.fetchone()
+    if not domain:
+        conn.close()
+        return f"No domain setup for {user_domain}", 404
+
+    required_skills = normalize_skills(domain["required_skills"])
+    missing_skills = list(required_skills - user_skills)
+
+    cur.execute("SELECT * FROM users WHERE domain=? AND id!=?", (user_domain, user["id"]))
+    teammates = cur.fetchall()
+
+    suggestions = []
+    for t in teammates:
+        t_skills = normalize_skills(t["skills"])
+        overlap = len(set(missing_skills) & t_skills)
+        score = int((overlap / len(required_skills)) * 100) if required_skills else 0
+
+        suggestions.append({
+            "id": t["id"],
+            "username": t["username"],
+            "fullname": t["fullname"],
+            "skills": t["skills"],
+            "domain": t["domain"],
+            "match_score": score
+        })
+
+    suggestions.sort(key=lambda x: x["match_score"], reverse=True)
+
+    conn.close()
+    return render_template("match.html",
+                           user_skills=user_skills,
+                           missing_skills=missing_skills,
+                           suggestions=suggestions)
+
+
+@app.route("/invite/<int:teammate_id>", methods=["POST"])
+def invite(teammate_id):
+    if "user_id" not in session:
+        flash("Please log in first!", "danger")
+        return redirect(url_for("login"))
+
+    sender_id = session["user_id"]
+
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT * FROM invites WHERE sender_id=? AND receiver_id=?",
+        (sender_id, teammate_id)
+    )
+    existing = cursor.fetchone()
+
+    if existing:
+        flash("You already invited this teammate!", "warning")
+    else:
+        cursor.execute(
+            "INSERT INTO invites (sender_id, receiver_id, status) VALUES (?, ?, ?)",
+            (sender_id, teammate_id, "pending")
+        )
+        conn.commit()
+        flash("Invite sent successfully ✅", "success")
+
+    conn.close()
+    return redirect(url_for("match"))
+
+
+@app.route("/respond_invite/<int:invite_id>/<string:action>", methods=["POST"])
+def respond_invite(invite_id, action):
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+
+    new_status = "accepted" if action == "accept" else "rejected"
+    cursor.execute("UPDATE invites SET status=? WHERE id=?", (new_status, invite_id))
+    conn.commit()
+    conn.close()
+
+    flash(f"Invite {new_status} successfully!", "success")
+    return redirect(url_for("my_invites"))
+
+@app.route("/my_invites")
+def my_invites():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()   # <-- use helper with row_factory
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT invites.id, users.username AS sender, invites.status
+        FROM invites
+        JOIN users ON invites.sender_id = users.id
+        WHERE invites.receiver_id = ?
+    """, (session["user_id"],))
+
+    invites = cursor.fetchall()
+    conn.close()
+
+    return render_template("my_invites.html", invites=invites)
+
+
+@app.route("/accept_invite/<int:invite_id>", methods=["POST"])
+def accept_invite(invite_id):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE invites SET status='accepted' WHERE id=?", (invite_id,))
+    conn.commit()
+    conn.close()
+    flash("Invite accepted!")
+    return redirect(url_for("my_invites"))
+
+@app.route("/decline_invite/<int:invite_id>", methods=["POST"])
+def decline_invite(invite_id):
+    conn = sqlite3.connect("users.db")
+    cursor = conn.cursor()
+    cursor.execute("UPDATE invites SET status='declined' WHERE id=?", (invite_id,))
+    conn.commit()
+    conn.close()
+    flash("Invite declined!")
+    return redirect(url_for("my_invites"))
+
+
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("home"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)

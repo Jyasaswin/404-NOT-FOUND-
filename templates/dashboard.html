@@ -62,8 +62,9 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item"><a class="nav-link fs-5" href="#">Teams</a></li>
-          <li class="nav-item"><a class="nav-link fs-5" href="#">Events</a></li>
+          <li class="nav-item"><a class="nav-link fs-5" href="{{ url_for('match') }}">Matchmaking</a></li>
           <li class="nav-item"><a class="nav-link fs-5" href="#">Peoples</a></li>
+          
         </ul>
 
         <ul class="navbar-nav ms-auto align-items-center">
@@ -87,6 +88,8 @@
     <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" 
          alt="Profile Picture" width="100" height="100" class="mb-3">
     <a href="{{ url_for('profile') }}" class="d-block fw-bold mb-4">My Details</a>
+    <br>
+    <a href="{{ url_for('my_invites') }}" class="btn btn-custom">My Invites</a>
     <a href="{{ url_for('logout') }}">➤ Logout</a>
   </div>
 </div>
