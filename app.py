@@ -64,7 +64,8 @@ def login():
         conn.close()
 
         if user and check_password_hash(user[3], password):
-            session["username"] = username
+            session["user_id"] = user[0]      # store user id
+            session["username"] = user[1]     # store username
             flash("You are logged in successfully!", "success")
             return redirect(url_for("dashboard"))
         else:
@@ -73,20 +74,20 @@ def login():
 
 @app.route("/dashboard")
 def dashboard():
-    if "username" in session:
+    if "user_id" in session:
         return render_template("dashboard.html", username=session["username"])
     return redirect(url_for("login"))
 
 @app.route("/add_skills", methods=["GET", "POST"])
 def add_skills():
-    if "username" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
 
     if request.method == "POST":
         skills = request.form.get("skills")
         conn = sqlite3.connect("users.db")
         c = conn.cursor()
-        c.execute("UPDATE users SET skills=? WHERE username=?", (skills, session["username"]))
+        c.execute("UPDATE users SET skills=? WHERE id=?", (skills, session["user_id"]))
         conn.commit()
         conn.close()
         flash("Skills added successfully!", "success")
@@ -96,7 +97,7 @@ def add_skills():
 
 @app.route("/add_personal", methods=["GET", "POST"])
 def add_personal():
-    if "username" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
 
     if request.method == "POST":
@@ -109,8 +110,8 @@ def add_personal():
         c = conn.cursor()
         c.execute("""UPDATE users 
                      SET fullname=?, age=?, contact=?, bio=? 
-                     WHERE username=?""",
-                  (fullname, age, contact, bio, session["username"]))
+                     WHERE id=?""",
+                  (fullname, age, contact, bio, session["user_id"]))
         conn.commit()
         conn.close()
         flash("Personal details added successfully!", "success")
@@ -120,7 +121,7 @@ def add_personal():
 
 @app.route("/add_other", methods=["GET", "POST"])
 def add_other():
-    if "username" not in session:
+    if "user_id" not in session:
         return redirect(url_for("login"))
 
     if request.method == "POST":
@@ -132,8 +133,8 @@ def add_other():
         c = conn.cursor()
         c.execute("""UPDATE users 
                      SET interests=?, availability=?, role=? 
-                     WHERE username=?""",
-                  (interests, availability, role, session["username"]))
+                     WHERE id=?""",
+                  (interests, availability, role, session["user_id"]))
         conn.commit()
         conn.close()
         flash("Other details added successfully!", "success")
@@ -141,9 +142,51 @@ def add_other():
 
     return render_template("add_other.html")
 
+@app.route("/profile")
+def profile():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],))
+    user = c.fetchone()
+    conn.close()
+    return render_template("profile.html", user=user)
+
+@app.route("/edit_profile", methods=["GET", "POST"])
+def edit_profile():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+    if request.method == "POST":
+        fullname = request.form["fullname"]
+        age = request.form["age"]
+        contact = request.form["contact"]
+        bio = request.form["bio"]
+        skills = request.form["skills"]
+        interests = request.form["interests"]
+        availability = request.form["availability"]
+        role = request.form["role"]
+
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        c.execute("""UPDATE users 
+                     SET fullname=?, age=?, contact=?, bio=?, skills=?, interests=?, availability=?, role=? 
+                     WHERE id=?""",
+                  (fullname, age, contact, bio, skills, interests, availability, role, session["user_id"]))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("profile"))
+
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM users WHERE id=?", (session["user_id"],))
+    user = c.fetchone()
+    conn.close()
+    return render_template("edit_profile.html", user=user)
+
 @app.route("/logout")
 def logout():
-    session.pop("username", None)
+    session.clear()
     return redirect(url_for("home"))
 
 if __name__ == "__main__":
