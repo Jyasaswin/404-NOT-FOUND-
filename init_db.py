@@ -36,7 +36,25 @@ def init_db():
             FOREIGN KEY (receiver_id) REFERENCES users(id)
         )
     """)
-    
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS teams (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            created_by INTEGER,
+            FOREIGN KEY(created_by) REFERENCES users(id)
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS team_members (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            team_id INTEGER,
+            user_id INTEGER,
+            FOREIGN KEY(team_id) REFERENCES teams(id),
+            FOREIGN KEY(user_id) REFERENCES users(id)
+        )
+    """)
 
     conn.commit()
     conn.close()

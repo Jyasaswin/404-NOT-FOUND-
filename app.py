@@ -12,24 +12,21 @@ UPLOAD_FOLDER = "static/resumes"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
-
 def get_db_connection():
     conn = sqlite3.connect("users.db")
     conn.row_factory = sqlite3.Row
     return conn
 
-
-# Normalize skill strings (strip spaces + lowercase)
 def normalize_skills(skill_string):
     if not skill_string:
         return set()
     return set(s.strip().lower() for s in skill_string.split(",") if s.strip())
 
+# ------------------- ROUTES -------------------
 
 @app.route("/")
 def home():
     return render_template("home.html")
-
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -47,7 +44,6 @@ def signup():
             return redirect(url_for("signup"))
 
         hashed_password = generate_password_hash(password)
-
         resume_file = request.files.get("resume")
         resume_filename = None
         skills = ""
@@ -75,7 +71,6 @@ def signup():
 
     return render_template("signup.html")
 
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -95,34 +90,28 @@ def login():
 
     return render_template("login.html")
 
-
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
         return redirect(url_for("login"))
-
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
     conn.close()
     return render_template("dashboard.html", user=user)
 
-
 @app.route("/profile")
 def profile():
     if "user_id" not in session:
         return redirect(url_for("login"))
-
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
     conn.close()
     return render_template("profile.html", user=user)
 
-
 @app.route("/edit_profile", methods=["GET", "POST"])
 def edit_profile():
     if "user_id" not in session:
         return redirect(url_for("login"))
-
     conn = get_db_connection()
     user = conn.execute("SELECT * FROM users WHERE id = ?", (session["user_id"],)).fetchone()
 
@@ -155,6 +144,7 @@ def edit_profile():
     conn.close()
     return render_template("edit_profile.html", user=user)
 
+# ------------------- MATCHMAKING -------------------
 
 @app.route("/match")
 def match():
@@ -190,7 +180,6 @@ def match():
         t_skills = normalize_skills(t["skills"])
         overlap = len(set(missing_skills) & t_skills)
         score = int((overlap / len(required_skills)) * 100) if required_skills else 0
-
         suggestions.append({
             "id": t["id"],
             "username": t["username"],
@@ -201,13 +190,10 @@ def match():
         })
 
     suggestions.sort(key=lambda x: x["match_score"], reverse=True)
-
     conn.close()
-    return render_template("match.html",
-                           user_skills=user_skills,
-                           missing_skills=missing_skills,
-                           suggestions=suggestions)
+    return render_template("match.html", user_skills=user_skills, missing_skills=missing_skills, suggestions=suggestions)
 
+# ------------------- INVITES -------------------
 
 @app.route("/invite/<int:teammate_id>", methods=["POST"])
 def invite(teammate_id):
@@ -216,8 +202,7 @@ def invite(teammate_id):
         return redirect(url_for("login"))
 
     sender_id = session["user_id"]
-
-    conn = sqlite3.connect("users.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute(
@@ -239,21 +224,47 @@ def invite(teammate_id):
     conn.close()
     return redirect(url_for("match"))
 
-
 @app.route("/respond_invite/<int:invite_id>/<string:action>", methods=["POST"])
 def respond_invite(invite_id, action):
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    conn = sqlite3.connect("users.db")
+    conn = get_db_connection()
     cursor = conn.cursor()
 
-    new_status = "accepted" if action == "accept" else "rejected"
-    cursor.execute("UPDATE invites SET status=? WHERE id=?", (new_status, invite_id))
+    cursor.execute("SELECT sender_id, receiver_id FROM invites WHERE id=?", (invite_id,))
+    invite = cursor.fetchone()
+    sender_id, receiver_id = invite["sender_id"], invite["receiver_id"]
+
+    if action == "accept":
+        cursor.execute("UPDATE invites SET status='accepted' WHERE id=?", (invite_id,))
+
+        # check if team exists
+        cursor.execute("""
+            SELECT t.id 
+            FROM teams t
+            JOIN team_members tm ON t.id = tm.team_id
+            WHERE tm.user_id=? OR tm.user_id=?
+        """, (sender_id, receiver_id))
+        team = cursor.fetchone()
+
+        if not team:
+            cursor.execute("INSERT INTO teams (name, created_by) VALUES (?, ?)", 
+                           (f"Team_{sender_id}", sender_id))
+            team_id = cursor.lastrowid
+            cursor.execute("INSERT INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, sender_id))
+            cursor.execute("INSERT INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, receiver_id))
+        else:
+            team_id = team["id"]
+            cursor.execute("INSERT OR IGNORE INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, sender_id))
+            cursor.execute("INSERT OR IGNORE INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, receiver_id))
+
+    else:
+        cursor.execute("UPDATE invites SET status='rejected' WHERE id=?", (invite_id,))
+
     conn.commit()
     conn.close()
-
-    flash(f"Invite {new_status} successfully!", "success")
+    flash(f"Invite {action}ed successfully!", "success")
     return redirect(url_for("my_invites"))
 
 @app.route("/my_invites")
@@ -261,48 +272,57 @@ def my_invites():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
-    conn = get_db_connection()   # <-- use helper with row_factory
+    conn = get_db_connection()
     cursor = conn.cursor()
-
     cursor.execute("""
         SELECT invites.id, users.username AS sender, invites.status
         FROM invites
         JOIN users ON invites.sender_id = users.id
         WHERE invites.receiver_id = ?
     """, (session["user_id"],))
-
     invites = cursor.fetchall()
     conn.close()
-
     return render_template("my_invites.html", invites=invites)
 
+# ------------------- TEAMS -------------------
 
-@app.route("/accept_invite/<int:invite_id>", methods=["POST"])
-def accept_invite(invite_id):
-    conn = sqlite3.connect("users.db")
+@app.route("/teams")
+def teams():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE invites SET status='accepted' WHERE id=?", (invite_id,))
-    conn.commit()
-    conn.close()
-    flash("Invite accepted!")
-    return redirect(url_for("my_invites"))
+    cursor.execute("""
+        SELECT t.id, t.name, t.created_by
+        FROM teams t
+        JOIN team_members tm ON t.id = tm.team_id
+        WHERE tm.user_id=?
+    """, (session["user_id"],))
+    teams_list = cursor.fetchall()
 
-@app.route("/decline_invite/<int:invite_id>", methods=["POST"])
-def decline_invite(invite_id):
-    conn = sqlite3.connect("users.db")
-    cursor = conn.cursor()
-    cursor.execute("UPDATE invites SET status='declined' WHERE id=?", (invite_id,))
-    conn.commit()
-    conn.close()
-    flash("Invite declined!")
-    return redirect(url_for("my_invites"))
+    team_data = []
+    for t in teams_list:
+        cursor.execute("""
+            SELECT u.id, u.username, u.fullname, u.skills, u.domain
+            FROM users u
+            JOIN team_members tm ON u.id = tm.user_id
+            WHERE tm.team_id=?
+        """, (t["id"],))
+        members = cursor.fetchall()
+        team_data.append({"team": t, "members": members})
 
+    conn.close()
+    return render_template("teams.html", team_data=team_data)
+
+# ------------------- LOGOUT -------------------
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("home"))
 
+# ------------------- MAIN -------------------
 
 if __name__ == "__main__":
     app.run(debug=True)

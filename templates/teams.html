@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Teams</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #1c1f26, #2b2f3a);
+      color: #f8f9fa;
+      min-height: 100vh;
+      padding-top: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-weight: bold;
+      color: #f1f1f1;
+      text-shadow: 0px 0px 5px #999;
+    }
+    .card {
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2d2f36, #3c3f47);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      font-size: 1.1rem;
+      font-weight: bold;
+      background: linear-gradient(135deg, #3c3f47, #2d2f36);
+      color: #fff;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+    }
+    .list-group-item {
+      background: transparent;
+      border: none;
+      color: #f8f9fa;
+      padding: 12px 15px;
+    }
+    .list-group-item b {
+      color: #00c3ff;
+    }
+    .text-muted {
+      text-align: center;
+      margin-top: 30px;
+    }
+    .navbar {
+      background: linear-gradient(135deg, #111, #222);
+      padding: 12px 20px;
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 20px;
+    }
+    .navbar a {
+      color: #f8f9fa;
+      text-decoration: none;
+      margin-right: 20px;
+      font-weight: 500;
+    }
+    .navbar a:hover {
+      color: #00c3ff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>👥 My Teams</h2>
+    {% for t in team_data %}
+      <div class="card">
+        <div class="card-header">
+          {{ t.team.name }} (Created by {{ t.team.created_by }})
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for m in t.members %}
+            <li class="list-group-item">
+              <b>{{ m.username }}</b> - {{ m.domain }} <br>
+              Skills: {{ m.skills }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% else %}
+      <p class="text-muted">You are not part of any team yet.</p>
+    {% endfor %}
+  </div>
+</body>
+</html>
