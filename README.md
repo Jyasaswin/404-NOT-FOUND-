@@ -5,10 +5,13 @@ Quick Teams is a web application that helps users form project teams based on sk
 ## Features
 
 - Create and manage user profiles with skills and domain expertise.
+- These skills will be extracted from resume provided by the user.
+- Match making will be done by the categorizing the domain based and check the percentage of score he is suitable for the project to contribute.
 - View teams and team members along with their skills.
 - Send and respond to team invitations.
 - Matchmaking feature to find suitable teammates.
 - Modern UI with gradient backgrounds and shadowed cards.
+- Simple use not with more complexation.
 
 ## Installation
 
