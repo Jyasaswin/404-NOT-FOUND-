@@ -18,28 +18,25 @@ Quick Teams is a web application that helps users form project teams based on sk
 
 
 1. Clone the repository
----bash
-git clone <your-repo-link>
-cd <your-repo-folder>
+ ```bash
+   git clone <your-repo-link>
+   cd <your-repo-folder>
 
-2. Install dependencies
----bash
-pip install -r requirements.txt
+ #Install dependencies
+   pip install -r requirements.txt
 
-3. Initialize the data base of the webpage
----bash
+ #Initialize the data base of the webpage
    python init_db.py
 
-4. Insert required (domains) database
----bash
+ #Insert required (domains) database
    python seed_domains.py
    
-6. Run the app
+ #Run the app
 --bash
 python app.py
 
-7. Open in browser
-cpp
+#Open in browser
+```cpp
 http://127.0.0.1:5000
 
 
