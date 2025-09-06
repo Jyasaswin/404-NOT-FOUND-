@@ -14,7 +14,7 @@
       padding-top: 100px; 
     }
     .navbar {
-      background: #2c003e;
+      background: linear-gradient(to right, #650cb4, #f090a4);
       min-height: 80px;
       padding: 20px 0;
       box-shadow: 0 4px 10px rgba(0,0,0,0.6);
@@ -75,7 +75,7 @@
     }
 
     .list-group-item {
-      background: #2c003e;
+      background: linear-gradient(to right, #650cb4, #f49aae);
       color: #f1f1f1;
       border: none;
       margin-bottom: 5px;
@@ -84,7 +84,7 @@
     }
 
     .btn-custom {
-      color: #2c003e;
+      background: linear-gradient(to right, #650cb4, #f090a4);
       font-weight: bold;
       border-radius: 8px;
       width: 100%;
@@ -108,7 +108,6 @@
         <ul class="navbar-nav me-auto">
           <li class="nav-item"><a class="nav-link fs-5" href="{{ url_for('teams') }}">My Teams</a></li>
           <li class="nav-item"><a class="nav-link fs-5" href="{{ url_for('match') }}">Matchmaking</a></li>
-          <li class="nav-item"><a class="nav-link fs-5" href="#">Peoples</a></li>
         </ul>
         <ul class="navbar-nav ms-auto align-items-center">
           <li class="nav-item">
@@ -132,11 +131,11 @@
       </div>
 
       <div class="section">
-        <a href="{{ url_for('profile') }}">👤 My Details</a>
+        <a href="{{ url_for('profile') }}">My Details</a>
         <hr>
-        <a href="{{ url_for('my_invites') }}" class="btn btn-custom mb-2">📩 My Invites</a>
+        <a href="{{ url_for('my_invites') }}" class="btn btn-custom mb-2">My Invites</a>
         <hr>
-        <a href="{{ url_for('logout') }}">🔓 Logout</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
       </div>
     </div>
   </div>
