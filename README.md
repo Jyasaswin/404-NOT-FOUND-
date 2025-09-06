@@ -22,11 +22,19 @@ cd <your-repo-folder>
 ---bash
 pip install -r requirements.txt
 
-3. Run the app
+3. Initialize the data base of the webpage
+---bash
+   python init_db.py
+
+4. Insert required (domains) database
+---bash
+   python seed_domains.py
+   
+6. Run the app
 --bash
 python app.py
 
-4. Open in browser
+7. Open in browser
 cpp
 http://127.0.0.1:5000
 
