@@ -22,7 +22,6 @@ def normalize_skills(skill_string):
         return set()
     return set(s.strip().lower() for s in skill_string.split(",") if s.strip())
 
-
 @app.route("/")
 def home():
     return render_template("home.html")
@@ -143,11 +142,9 @@ def edit_profile():
     conn.close()
     return render_template("edit_profile.html", user=user)
 
-
 @app.route("/resume/<filename>")
 def download_resume(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
-
 
 @app.route("/match")
 def match():
@@ -196,7 +193,6 @@ def match():
     conn.close()
     return render_template("match.html", user_skills=user_skills, missing_skills=missing_skills, suggestions=suggestions)
 
-
 @app.route("/view_user/<int:user_id>")
 def view_user(user_id):
     conn = get_db_connection()
@@ -207,7 +203,6 @@ def view_user(user_id):
         return "User not found", 404
 
     return render_template("view_user.html", user=user)
-
 
 @app.route("/invite/<int:teammate_id>", methods=["POST"])
 def invite(teammate_id):
@@ -247,22 +242,41 @@ def respond_invite(invite_id, action):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT sender_id, receiver_id FROM invites WHERE id=?", (invite_id,))
+    cursor.execute("SELECT * FROM invites WHERE id=?", (invite_id,))
     invite = cursor.fetchone()
     if not invite:
         conn.close()
         flash("Invite not found!", "danger")
         return redirect(url_for("my_invites"))
 
-    sender_id, receiver_id = invite
+    receiver_id = invite["receiver_id"]
+    sender_id = invite["sender_id"]
 
     if action == "accept":
         cursor.execute("UPDATE invites SET status='accepted' WHERE id=?", (invite_id,))
-       
+        conn.commit()
+
+        # Check if sender has a team
+        cursor.execute("SELECT id FROM teams WHERE created_by=? ORDER BY id ASC", (sender_id,))
+        team = cursor.fetchone()
+        if not team:
+            # create team automatically
+            cursor.execute("INSERT INTO teams (name, created_by) VALUES (?, ?)",
+                           (f"{sender_id}_team", sender_id))
+            team_id = cursor.lastrowid
+        else:
+            team_id = team["id"]
+
+        # Add receiver to the team if not already a member
+        cursor.execute("SELECT * FROM team_members WHERE team_id=? AND user_id=?", (team_id, receiver_id))
+        if not cursor.fetchone():
+            cursor.execute("INSERT INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, receiver_id))
+        conn.commit()
+
     else:
         cursor.execute("UPDATE invites SET status='rejected' WHERE id=?", (invite_id,))
+        conn.commit()
 
-    conn.commit()
     conn.close()
     flash(f"Invite {action}ed successfully!", "success")
     return redirect(url_for("my_invites"))
@@ -282,7 +296,6 @@ def my_invites():
     conn.close()
     return render_template("my_invites.html", invites=invites)
 
-
 @app.route("/teams")
 def teams():
     if "user_id" not in session:
@@ -290,9 +303,10 @@ def teams():
 
     conn = get_db_connection()
     teams_list = conn.execute("""
-        SELECT t.id, t.name, t.created_by
+        SELECT t.id, t.name, t.created_by, u.username AS creator_name
         FROM teams t
         JOIN team_members tm ON t.id = tm.team_id
+        JOIN users u ON t.created_by = u.id
         WHERE tm.user_id=?
     """, (session["user_id"],)).fetchall()
 
@@ -309,12 +323,32 @@ def teams():
     conn.close()
     return render_template("teams.html", team_data=team_data)
 
+@app.route("/create_team", methods=["POST"])
+def create_team():
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    team_name = request.form["team_name"].strip()
+    if not team_name:
+        flash("Team name cannot be empty", "danger")
+        return redirect(url_for("teams"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO teams (name, created_by) VALUES (?, ?)",
+                   (team_name, session["user_id"]))
+    team_id = cursor.lastrowid
+    cursor.execute("INSERT INTO team_members (team_id, user_id) VALUES (?, ?)",
+                   (team_id, session["user_id"]))
+    conn.commit()
+    conn.close()
+    flash(f"Team '{team_name}' created successfully ✅", "success")
+    return redirect(url_for("teams"))
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("home"))
-
 
 if __name__ == "__main__":
     app.run(debug=True)
