@@ -12,9 +12,9 @@ Quick Teams is a web application that helps users form project teams based on sk
 
 ## Installation
 
-1. Clone the repository:
 
-```bash
+1. Clone the repository
+---bash
 git clone <your-repo-link>
 cd <your-repo-folder>
 
