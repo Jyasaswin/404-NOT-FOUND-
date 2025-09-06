@@ -17,8 +17,8 @@ Quick Teams is a web application that helps users form project teams based on sk
 ## Installation
 
 
-1. Clone the repository
  ```bash
+ #Clone the repository
    git clone <your-repo-link>
    cd <your-repo-folder>
 
@@ -32,13 +32,11 @@ Quick Teams is a web application that helps users form project teams based on sk
    python seed_domains.py
    
  #Run the app
---bash
-python app.py
+   python app.py
 
 #Open in browser
 ```cpp
 http://127.0.0.1:5000
-
 
 
 
