@@ -49,6 +49,19 @@
       font-weight: bold;
       color: #f1f1f1;
     }
+    .signup-link {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+    .signup-link a {
+      color: #ff6a88;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .signup-link a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -62,7 +75,6 @@
     <div class="card p-4 w-50">
       <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profile" class="profile-pic">
 
-
       <h2 class="text-center mb-4">Login</h2>
       <form method="POST" action="{{ url_for('login') }}">
         <div class="mb-3">
@@ -75,6 +87,11 @@
         </div>
         <button type="submit" class="btn btn-custom w-100">Login</button>
       </form>
+
+      <div class="signup-link">
+        Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a>
+      </div>
+
     </div>
   </div>
 </body>

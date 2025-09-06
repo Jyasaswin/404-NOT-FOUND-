@@ -205,14 +205,16 @@ def invite(teammate_id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute(
-        "SELECT * FROM invites WHERE sender_id=? AND receiver_id=?",
-        (sender_id, teammate_id)
-    )
+    # Check if invite already exists in either direction
+    cursor.execute("""
+        SELECT * FROM invites 
+        WHERE (sender_id=? AND receiver_id=?) 
+           OR (sender_id=? AND receiver_id=?)
+    """, (sender_id, teammate_id, teammate_id, sender_id))
     existing = cursor.fetchone()
 
     if existing:
-        flash("You already invited this teammate!", "warning")
+        flash("An invite already exists between you and this teammate!", "warning")
     else:
         cursor.execute(
             "INSERT INTO invites (sender_id, receiver_id, status) VALUES (?, ?, ?)",
@@ -224,6 +226,7 @@ def invite(teammate_id):
     conn.close()
     return redirect(url_for("match"))
 
+
 @app.route("/respond_invite/<int:invite_id>/<string:action>", methods=["POST"])
 def respond_invite(invite_id, action):
     if "user_id" not in session:
@@ -232,33 +235,41 @@ def respond_invite(invite_id, action):
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # Get sender & receiver
     cursor.execute("SELECT sender_id, receiver_id FROM invites WHERE id=?", (invite_id,))
     invite = cursor.fetchone()
-    sender_id, receiver_id = invite["sender_id"], invite["receiver_id"]
+    if not invite:
+        conn.close()
+        flash("Invite not found!", "danger")
+        return redirect(url_for("my_invites"))
+
+    sender_id, receiver_id = invite
 
     if action == "accept":
+        # Update invite status
         cursor.execute("UPDATE invites SET status='accepted' WHERE id=?", (invite_id,))
 
-        # check if team exists
+        # Check if a team already exists containing both users
         cursor.execute("""
-            SELECT t.id 
+            SELECT t.id
             FROM teams t
-            JOIN team_members tm ON t.id = tm.team_id
-            WHERE tm.user_id=? OR tm.user_id=?
+            JOIN team_members tm1 ON t.id = tm1.team_id AND tm1.user_id=?
+            JOIN team_members tm2 ON t.id = tm2.team_id AND tm2.user_id=?
         """, (sender_id, receiver_id))
         team = cursor.fetchone()
 
         if not team:
+            # Create new team if none exists
             cursor.execute("INSERT INTO teams (name, created_by) VALUES (?, ?)", 
-                           (f"Team_{sender_id}", sender_id))
+                           ("Team_" + str(sender_id), sender_id))
             team_id = cursor.lastrowid
             cursor.execute("INSERT INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, sender_id))
             cursor.execute("INSERT INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, receiver_id))
         else:
             team_id = team["id"]
+            # Ensure both are in the team (if somehow missing)
             cursor.execute("INSERT OR IGNORE INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, sender_id))
             cursor.execute("INSERT OR IGNORE INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, receiver_id))
-
     else:
         cursor.execute("UPDATE invites SET status='rejected' WHERE id=?", (invite_id,))
 
@@ -266,6 +277,7 @@ def respond_invite(invite_id, action):
     conn.close()
     flash(f"Invite {action}ed successfully!", "success")
     return redirect(url_for("my_invites"))
+
 
 @app.route("/my_invites")
 def my_invites():
