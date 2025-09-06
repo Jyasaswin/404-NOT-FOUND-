@@ -8,8 +8,8 @@
 
   <style>
     body {
-      background: linear-gradient(to right, #8e2de2, #ff6a88);
-      color: #f1f1f1;
+      background: linear-gradient(to right, #11998e, #38ef7d);
+      color: #1a1a1a;
       font-family: Arial, sans-serif;
       min-height: 100vh;
     }
@@ -21,42 +21,46 @@
       margin-bottom: 25px;
       font-weight: bold;
       color: #ffffff;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     .list-group-item {
-      background: rgba(0, 0, 0, 0.55);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255, 255, 255, 0.9);
+      color: #1a1a1a;
+      border: 1px solid rgba(0,0,0,0.1);
       border-radius: 15px;
       margin-bottom: 15px;
       padding: 18px 22px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-      backdrop-filter: blur(6px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      backdrop-filter: blur(4px);
     }
     .btn-success {
-      background: linear-gradient(to right, #4caf50, #388e3c);
+      background: linear-gradient(to right, #11998e, #38ef7d);
       border: none;
-      font-weight: 500;
+      font-weight: 600;
       padding: 6px 14px;
       border-radius: 8px;
-      transition: transform 0.2s ease-in-out;
+      color: #fff;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s;
     }
     .btn-danger {
-      background: linear-gradient(to right, #f44336, #b71c1c);
+      background: linear-gradient(to right, #ff416c, #ff4b2b);
       border: none;
-      font-weight: 500;
+      font-weight: 600;
       padding: 6px 14px;
       border-radius: 8px;
-      transition: transform 0.2s ease-in-out;
+      color: #fff;
+      transition: transform 0.2s ease-in-out, box-shadow 0.2s;
     }
     .btn-success:hover, .btn-danger:hover {
       transform: scale(1.05);
-      opacity: 0.9;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      opacity: 0.95;
     }
     .badge {
       font-size: 0.85rem;
       padding: 6px 12px;
       border-radius: 8px;
-      background: rgba(255,255,255,0.3);
+      background: rgba(17, 153, 142, 0.8);
       color: #fff;
     }
   </style>
@@ -85,4 +89,5 @@
   {% endfor %}
 
 </body>
+</html>
 </html>

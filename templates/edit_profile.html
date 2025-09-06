@@ -6,47 +6,67 @@
   <title>Edit Profile</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body { 
-      background: linear-gradient(to right, #8e2de2, #ff6a88); 
-      color: #f1f1f1; 
-      font-family: Arial, sans-serif; 
-    }
-    .card { 
-      background-color: rgba(0, 0, 0, 0.55); 
-      color: #fff; 
-      border-radius: 15px; 
-      padding: 30px; 
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-      backdrop-filter: blur(6px);
-    }
-    .card h2 {
-      color: #ffffff;
-      font-weight: bold;
-    }
-    label {
-      color: #e0e0e0;
-      font-weight: 500;
-    }
-    input, select {
-      background-color: rgba(28, 28, 28, 0.7) !important;
-      border: 1px solid rgba(255,255,255,0.3) !important;
-      color: #fff !important;
-    }
-    .btn-custom { 
-      background: linear-gradient(to right, #ffffff, #cccccc);
-      color: black; 
-      font-weight: bold; 
-      border: none; 
-      border-radius: 10px;
-      transition: transform 0.2s ease-in-out;
-    }
-    .btn-custom:hover {
-      transform: scale(1.05);
-      background: linear-gradient(to right, #f1f1f1, #bbbbbb);
-    }
-    small.text-muted {
-      color: #ccc !important;
-    }
+body { 
+  background: #f0f8f5; 
+  color: #1a1a1a; 
+  font-family: Arial, sans-serif; 
+}
+
+.card { 
+  background-color: #ffffff; 
+  color: #1a1a1a; 
+  border-radius: 18px; 
+  padding: 35px; 
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+.card h2 {
+  color: #11998e; 
+  font-weight: bold;
+  font-size: 28px;
+}
+
+label {
+  color: #11998e; 
+  font-weight: 600;
+}
+
+input, select {
+  background-color: #e0f7f4 !important; 
+  border: 1px solid #11998e !important;
+  color: #1a1a1a !important;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+input:focus, select:focus {
+  border-color: #38ef7d !important;
+  box-shadow: 0 0 6px rgba(56,239,125,0.6);
+}
+
+.btn-custom { 
+  background: linear-gradient(to right, #11998e, #38ef7d);
+  color: #ffffff; 
+  font-weight: bold; 
+  border: none; 
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 16px;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s;
+}
+
+.btn-custom:hover {
+  transform: scale(1.05);
+  background: #38ef7d;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+small.text-muted {
+  color: #555 !important;
+  font-style: italic;
+}
+
   </style>
 </head>
 <body>
