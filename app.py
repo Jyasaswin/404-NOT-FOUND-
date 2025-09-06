@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from skill_extractor import extract_skills
@@ -22,7 +22,6 @@ def normalize_skills(skill_string):
         return set()
     return set(s.strip().lower() for s in skill_string.split(",") if s.strip())
 
-# ------------------- ROUTES -------------------
 
 @app.route("/")
 def home():
@@ -144,7 +143,11 @@ def edit_profile():
     conn.close()
     return render_template("edit_profile.html", user=user)
 
-# ------------------- MATCHMAKING -------------------
+
+@app.route("/resume/<filename>")
+def download_resume(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
+
 
 @app.route("/match")
 def match():
@@ -193,7 +196,18 @@ def match():
     conn.close()
     return render_template("match.html", user_skills=user_skills, missing_skills=missing_skills, suggestions=suggestions)
 
-# ------------------- INVITES -------------------
+
+@app.route("/view_user/<int:user_id>")
+def view_user(user_id):
+    conn = get_db_connection()
+    user = conn.execute("SELECT * FROM users WHERE id=?", (user_id,)).fetchone()
+    conn.close()
+
+    if not user:
+        return "User not found", 404
+
+    return render_template("view_user.html", user=user)
+
 
 @app.route("/invite/<int:teammate_id>", methods=["POST"])
 def invite(teammate_id):
@@ -205,7 +219,6 @@ def invite(teammate_id):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Check if invite already exists in either direction
     cursor.execute("""
         SELECT * FROM invites 
         WHERE (sender_id=? AND receiver_id=?) 
@@ -226,7 +239,6 @@ def invite(teammate_id):
     conn.close()
     return redirect(url_for("match"))
 
-
 @app.route("/respond_invite/<int:invite_id>/<string:action>", methods=["POST"])
 def respond_invite(invite_id, action):
     if "user_id" not in session:
@@ -235,7 +247,6 @@ def respond_invite(invite_id, action):
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # Get sender & receiver
     cursor.execute("SELECT sender_id, receiver_id FROM invites WHERE id=?", (invite_id,))
     invite = cursor.fetchone()
     if not invite:
@@ -246,30 +257,8 @@ def respond_invite(invite_id, action):
     sender_id, receiver_id = invite
 
     if action == "accept":
-        # Update invite status
         cursor.execute("UPDATE invites SET status='accepted' WHERE id=?", (invite_id,))
-
-        # Check if a team already exists containing both users
-        cursor.execute("""
-            SELECT t.id
-            FROM teams t
-            JOIN team_members tm1 ON t.id = tm1.team_id AND tm1.user_id=?
-            JOIN team_members tm2 ON t.id = tm2.team_id AND tm2.user_id=?
-        """, (sender_id, receiver_id))
-        team = cursor.fetchone()
-
-        if not team:
-            # Create new team if none exists
-            cursor.execute("INSERT INTO teams (name, created_by) VALUES (?, ?)", 
-                           ("Team_" + str(sender_id), sender_id))
-            team_id = cursor.lastrowid
-            cursor.execute("INSERT INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, sender_id))
-            cursor.execute("INSERT INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, receiver_id))
-        else:
-            team_id = team["id"]
-            # Ensure both are in the team (if somehow missing)
-            cursor.execute("INSERT OR IGNORE INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, sender_id))
-            cursor.execute("INSERT OR IGNORE INTO team_members (team_id, user_id) VALUES (?, ?)", (team_id, receiver_id))
+       
     else:
         cursor.execute("UPDATE invites SET status='rejected' WHERE id=?", (invite_id,))
 
@@ -278,25 +267,21 @@ def respond_invite(invite_id, action):
     flash(f"Invite {action}ed successfully!", "success")
     return redirect(url_for("my_invites"))
 
-
 @app.route("/my_invites")
 def my_invites():
     if "user_id" not in session:
         return redirect(url_for("login"))
 
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
+    invites = conn.execute("""
         SELECT invites.id, users.username AS sender, invites.status
         FROM invites
         JOIN users ON invites.sender_id = users.id
         WHERE invites.receiver_id = ?
-    """, (session["user_id"],))
-    invites = cursor.fetchall()
+    """, (session["user_id"],)).fetchall()
     conn.close()
     return render_template("my_invites.html", invites=invites)
 
-# ------------------- TEAMS -------------------
 
 @app.route("/teams")
 def teams():
@@ -304,37 +289,32 @@ def teams():
         return redirect(url_for("login"))
 
     conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
+    teams_list = conn.execute("""
         SELECT t.id, t.name, t.created_by
         FROM teams t
         JOIN team_members tm ON t.id = tm.team_id
         WHERE tm.user_id=?
-    """, (session["user_id"],))
-    teams_list = cursor.fetchall()
+    """, (session["user_id"],)).fetchall()
 
     team_data = []
     for t in teams_list:
-        cursor.execute("""
+        members = conn.execute("""
             SELECT u.id, u.username, u.fullname, u.skills, u.domain
             FROM users u
             JOIN team_members tm ON u.id = tm.user_id
             WHERE tm.team_id=?
-        """, (t["id"],))
-        members = cursor.fetchall()
+        """, (t["id"],)).fetchall()
         team_data.append({"team": t, "members": members})
 
     conn.close()
     return render_template("teams.html", team_data=team_data)
 
-# ------------------- LOGOUT -------------------
 
 @app.route("/logout")
 def logout():
     session.clear()
     return redirect(url_for("home"))
 
-# ------------------- MAIN -------------------
 
 if __name__ == "__main__":
     app.run(debug=True)

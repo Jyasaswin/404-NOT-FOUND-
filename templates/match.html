@@ -1,121 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Quick Teams - Matchmaking</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    body { 
-      background: linear-gradient(to right, #8e2de2, #ff6a88);
-      color: #f1f1f1;
-      font-family: Arial, sans-serif; 
-      min-height: 100vh;
-    }
-    .section-card { 
-      background: rgba(0, 0, 0, 0.55);
-      padding: 20px; 
-      border-radius: 12px; 
-      margin-bottom: 25px; 
-      border: 1px solid rgba(255,255,255,0.15);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-      backdrop-filter: blur(6px);
-    }
-    h2, h3 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #ffffff;
-    }
-    .skills-box span {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 8px;
-      margin: 5px;
-      font-size: 14px;
-    }
-    .card {
-      background: rgb(155, 86, 174);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 12px;
-      padding: 20px;
-      margin: 18px 0;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.35);
-      backdrop-filter: blur(6px);
-    }
-    .card h3 {
-      color: #ffffff;
-      font-size: 1.25rem;
-    }
-    .card p {
-      color: #e0e0e0;
-      margin: 5px 0;
-    }
-    .invite-btn {
-      display: inline-block;
-      background: linear-gradient(to right, #4caf50, #388e3c);
-      color: #fff;
-      font-weight: bold;
-      padding: 8px 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: transform 0.2s ease-in-out;
-    }
-    .invite-btn:hover {
-      transform: scale(1.05);
-      opacity: 0.9;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Quick Teams - Matchmaking</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body { 
+    background: linear-gradient(to right, #8e2de2, #ff6a88);
+    color: #f1f1f1;
+    font-family: Arial, sans-serif; 
+    min-height: 100vh;
+  }
+  .section-card { 
+    background: rgba(0, 0, 0, 0.55);
+    padding: 20px; 
+    border-radius: 12px; 
+    margin-bottom: 25px; 
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    backdrop-filter: blur(6px);
+  }
+  h2, h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ffffff;
+  }
+  .skills-box span {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 8px;
+    margin: 5px;
+    font-size: 14px;
+  }
+  .card {
+    background: rgb(155, 86, 174);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 20px;
+    margin: 18px 0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+    backdrop-filter: blur(6px);
+  }
+  .card h3 {
+    color: #ffffff;
+    font-size: 1.25rem;
+  }
+  .card p {
+    color: #e0e0e0;
+    margin: 5px 0;
+  }
+  .invite-btn, .details-btn {
+    display: inline-block;
+    font-weight: bold;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s ease-in-out;
+  }
+  .invite-btn {
+    background: linear-gradient(to right, #4caf50, #388e3c);
+    color: #fff;
+  }
+  .invite-btn:hover { transform: scale(1.05); opacity: 0.9; }
+  .details-btn {
+    background: linear-gradient(to right, #00c3ff, #0088cc);
+    color: #fff;
+  }
+  .details-btn:hover { transform: scale(1.05); opacity: 0.9; }
+</style>
 </head>
 <body class="container py-5">
 
-  <h2>Matchmaking</h2>
+<h2>Matchmaking</h2>
 
-  <div class="section-card">
-    <h3>Your Current Skills</h3>
-    <div class="skills-box">
-      {% if user_skills %}
-        {% for skill in user_skills %}
-          <span>{{ skill }}</span>
-        {% endfor %}
-      {% else %}
-        <p>No skills added yet.</p>
-      {% endif %}
-    </div>
+<div class="section-card">
+  <h3>Your Current Skills</h3>
+  <div class="skills-box">
+    {% if user_skills %}
+      {% for skill in user_skills %}
+        <span>{{ skill }}</span>
+      {% endfor %}
+    {% else %}
+      <p>No skills added yet.</p>
+    {% endif %}
   </div>
+</div>
 
-  <div class="section-card">
-    <h3>Missing Skills (for your domain)</h3>
-    <div class="skills-box">
-      {% if missing_skills %}
-        {% for skill in missing_skills %}
-          <span>{{ skill }}</span>
-        {% endfor %}
-      {% else %}
-        <p> You already have all required skills!</p>
-      {% endif %}
-    </div>
+<div class="section-card">
+  <h3>Missing Skills (for your domain)</h3>
+  <div class="skills-box">
+    {% if missing_skills %}
+      {% for skill in missing_skills %}
+        <span>{{ skill }}</span>
+      {% endfor %}
+    {% else %}
+      <p>You already have all required skills!</p>
+    {% endif %}
   </div>
+</div>
 
-  <div class="section-card">
-    <h3>Suggested Teammates</h3>
-    {% if suggestions %}
-      {% for s in suggestions %}
-        <div class="card">
-          <h3>{{ s.fullname }} ({{ s.username }})</h3>
-          <p><b>Skills:</b> {{ s.skills }}</p>
-          <p><b>Match Score:</b> {{ s.match_score }}%</p>
+<div class="section-card">
+  <h3>Suggested Teammates</h3>
+  {% if suggestions %}
+    {% for s in suggestions %}
+      <div class="card">
+        <h3>{{ s.fullname }} ({{ s.username }})</h3>
+        <p><b>Skills:</b> {{ s.skills }}</p>
+        <p><b>Match Score:</b> {{ s.match_score }}%</p>
+        <div class="d-flex gap-2">
           <form action="{{ url_for('invite', teammate_id=s.id) }}" method="post">
             <button type="submit" class="invite-btn">Invite</button>
           </form>
+          <a href="{{ url_for('view_user', user_id=s.id) }}" class="details-btn">Show Details</a>
         </div>
-      {% endfor %}
-    {% else %}
-      <p>No teammates found in your domain yet.</p>
-    {% endif %}
-  </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No teammates found in your domain yet.</p>
+  {% endif %}
+</div>
 
 </body>
 </html>
