@@ -5,10 +5,13 @@ Quick Teams is a web application that helps users form project teams based on sk
 ## Features
 
 - Create and manage user profiles with skills and domain expertise.
+- These skills will be extracted from resume provided by the user.
+- Match making will be done by the categorizing the domain based and check the percentage of score he is suitable for the project to contribute.
 - View teams and team members along with their skills.
 - Send and respond to team invitations.
 - Matchmaking feature to find suitable teammates.
 - Modern UI with gradient backgrounds and shadowed cards.
+- Simple use not with more complexation.
 
 ## Installation
 
@@ -22,11 +25,19 @@ cd <your-repo-folder>
 ---bash
 pip install -r requirements.txt
 
-3. Run the app
+3. Initialize the data base of the webpage
+---bash
+   python init_db.py
+
+4. Insert required (domains) database
+---bash
+   python seed_domains.py
+   
+6. Run the app
 --bash
 python app.py
 
-4. Open in browser
+7. Open in browser
 cpp
 http://127.0.0.1:5000
 
