@@ -10,8 +10,9 @@ Quick Teams is a web application that helps users form project teams based on sk
 - View teams and team members along with their skills.
 - Send and respond to team invitations.
 - Matchmaking feature to find suitable teammates.
-- Modern UI with gradient backgrounds and shadowed cards.
-- Simple use not with more complexation.
+
+## Video demo link
+   [link](https://drive.google.com/file/d/15YuRfPvFWqjRaTHJdcXV3GaXP0r2vJss/view?usp=drivesdk)
 
 ## Installation
 
@@ -40,5 +41,7 @@ python app.py
 7. Open in browser
 cpp
 http://127.0.0.1:5000
+
+
 
 
